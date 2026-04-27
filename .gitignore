@@ -61,7 +61,7 @@ Thumbs.db
 
 .env.example
 # database dumps
-*.sql
+# *.sql
 *.dump
 *.sqlite
 *.db
