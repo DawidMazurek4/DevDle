@@ -1,8 +1,10 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+
+	"github.com/DawidMazurek4/DevDle/handlers"
 )
 
 func SetupRouter(frontendURL string) *gin.Engine {
@@ -13,5 +15,7 @@ func SetupRouter(frontendURL string) *gin.Engine {
 		AllowMethods: []string{"GET", "POST"},
 		AllowHeaders: []string{"Origin", "Content-Type"},
 	}))
+	r.POST("/guess", handlers.CompareLanguage)
+	r.GET("/game", handlers.NewGame)
 	return r
 }

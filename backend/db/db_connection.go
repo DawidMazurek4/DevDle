@@ -7,7 +7,7 @@ import (
 
 	_ "github.com/lib/pq"
 )
-
+var DB *sql.DB
 func Connect() {
 	connStr := "user=" + os.Getenv("DB_USER") +
 		" password=" + os.Getenv("DB_PASSWORD") +
@@ -15,7 +15,8 @@ func Connect() {
 		" host=" + os.Getenv("DB_HOST") +
 		" port=" + os.Getenv("DB_PORT") +
 		" sslmode=disable"
-	DB, err := sql.Open("postgres", connStr)
+	var err error
+	DB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
