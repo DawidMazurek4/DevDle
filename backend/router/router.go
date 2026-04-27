@@ -17,5 +17,6 @@ func SetupRouter(frontendURL string) *gin.Engine {
 	}))
 	r.POST("/guess", handlers.CompareLanguage)
 	r.GET("/game", handlers.NewGame)
+	r.GET("/languages", handlers.GetAllLanguages)
 	return r
 }
