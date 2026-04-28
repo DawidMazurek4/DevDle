@@ -13,8 +13,8 @@ export default function GuessRow({ guess, result }: Props) {
     return "";
   };
 
-  const getStatusClass = (value: string) => {
-    return value === "1" ? "correct-green" : "incorrect-red";
+  const getStatusClass = (value: number) => {
+    return value === 1 ? "correct-green" : "incorrect-red";
   };
 
   return (

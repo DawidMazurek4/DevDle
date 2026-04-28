@@ -1,4 +1,5 @@
 export type Language = {
+  id : number;
   year: number;
   name: string;
   typing: string;
@@ -8,18 +9,22 @@ export type Language = {
   languageLevel: string;
 }
 
-export type Game = {
-  game_id: string;
+export type GameResponse = {
+  game_id: number;
   language: Language;
+  result: GuessResponse;
 }
 
 export type GuessResponse = {
-  game_id: string;
-  name: string;
-  year: number;        // 1 = correct, -1 = too early, 0 = too late
-  typing: string;      // "1" lub "0"
-  paradigm: string;    // "1" lub "0"
-  mainUsage: string;   // "1" lub "0"
-  executionType: string; // "1" lub "0"
-  languageLevel: string; // "1" lub "0"
+  year: number;  // 1 = correct, -1 = too early, 0 = too late
+  typing: number;
+  paradigm: number;
+  mainUsage: number;
+  executionType: number;
+  languageLevel: number; 
+}
+
+export type GuessRequest = {
+  Language: string;
+  GameID: number;
 }

@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Language, Game, GuessResponse } from "@/lib/types";
+import { Language, GameResponse, GuessResponse } from "@/lib/types";
 import { getRandomLanguage, submitGuess } from "@/lib/api";
 import { loadLanguages, getLanguageData } from "@/lib/languagesCache";
 import GuessInput from "@/components/GuessInput";
 import GuessGrid from "@/components/GuessGrid";
 
 export default function Home() {
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<GameResponse | null>(null);
   const [guesses, setGuesses] = useState<Language[]>([]);
   const [results, setResults] = useState<GuessResponse[]>([]);
   const [won, setWon] = useState(false);
@@ -27,7 +27,8 @@ export default function Home() {
   async function handleGuess(name: string) {
     if (!game || won) return;
     
-    const result = await submitGuess(game.game_id, name);
+    const gameId = typeof game.game_id === 'number' ? game.game_id : parseInt(game.game_id as any);
+    const result = await submitGuess(gameId, name);
     const guessedLanguage = getLanguageData(name);
     
     if (!guessedLanguage || !result) return;
