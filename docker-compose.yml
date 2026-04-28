@@ -27,5 +27,14 @@ services:
     env_file:
       - .env
 
+  frontend:
+    build: ./frontend
+    container_name: frontend_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
 volumes:
   pgdata:
