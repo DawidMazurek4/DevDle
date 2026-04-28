@@ -4,6 +4,24 @@ import (
 	"github.com/DawidMazurek4/DevDle/models"
 )
 
+func GetAllLanguages() ([]models.Language, error) {
+	rows, err := DB.Query("SELECT name FROM languages")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var languages []models.Language
+	for rows.Next() {
+		var language models.Language
+		if err := rows.Scan(&language.Name); err != nil {
+			return nil, err
+		}
+		languages = append(languages, language)
+	}
+	return languages, nil
+}
+
 func GetLanguageIDByGameID(gameID int) (int, error) {
 	var languageID int
 	err := DB.QueryRow("SELECT language_id FROM games WHERE id = $1", gameID).Scan(&languageID)

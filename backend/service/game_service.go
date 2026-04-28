@@ -8,7 +8,9 @@ import (
 func NewGame() (int, error) {
 	return db.NewGame()
 }
-
+func GetAllLanguages() ([]models.Language, error) {
+	return db.GetAllLanguages()
+}
 func CompareLanguage(languageName string, gameID int) (models.Language, models.LanguageResult, error) {
 
 	userLanguage, err := db.GetLanguageByName(languageName)

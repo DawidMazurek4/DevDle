@@ -24,13 +24,21 @@ func CompareLanguage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, models.GameResponse{
 		Language: user,
 		Result:   gameResult,
 	})
 }
 
+func GetAllLanguages(c *gin.Context) {
+	languages, err := service.GetAllLanguages()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve languages"})
+		return
+	}
+	c.JSON(http.StatusOK, languages)
+
+}
 func NewGame(c *gin.Context) {
 	gameID, err := service.NewGame()
 	if err != nil {
