@@ -1,6 +1,8 @@
 package service
 
 import (
+	"log"
+
 	"github.com/DawidMazurek4/DevDle/db"
 	"github.com/DawidMazurek4/DevDle/models"
 )
@@ -26,9 +28,20 @@ func CompareLanguage(languageName string, gameID int) (models.Language, models.L
 	result := models.LanguageResult{}
 
 	// win condition
+	log.Printf("Comparing user language ID: %d with correct language ID: %d", userLanguage.Id, correctLanguage.Id)
 	if userLanguage.Id == correctLanguage.Id {
 		_ = db.FinishGame(gameID)
-		return correctLanguage, models.LanguageResult{}, nil
+
+		result := models.LanguageResult{
+			Year:          1,
+			Typing:        1,
+			Paradigm:      1,
+			MainUsage:     1,
+			ExecutionType: 1,
+			LanguageLevel: 1,
+		}
+
+		return userLanguage, result, nil
 	}
 
 	// year comparison
@@ -48,6 +61,7 @@ func CompareLanguage(languageName string, gameID int) (models.Language, models.L
 	}
 
 	// paradigm
+	log.Printf("User language paradigm: %s, Correct language paradigm: %s", userLanguage.Paradigm, correctLanguage.Paradigm)
 	if userLanguage.Paradigm == correctLanguage.Paradigm {
 		result.Paradigm = 1
 	} else {
