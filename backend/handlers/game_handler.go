@@ -10,20 +10,21 @@ import (
 
 func CompareLanguage(c *gin.Context) {
 	var body struct {
-		Language string `json:"language"`
-		GameID   int    `json:"game_id"`
+		Language   string `json:"language"`
+		GameID     int    `json:"game_id"`
+		SessionKey string `json:"session_key"`
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
-	if body.Language == "" || body.GameID == 0 {
+	if body.Language == "" || body.GameID == 0 || body.SessionKey == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload empty fields"})
 		return
 	}
 
-	user, gameResult, err := service.CompareLanguage(body.Language, body.GameID)
+	user, gameResult, err := service.CompareLanguage(body.Language, body.GameID, body.SessionKey)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -44,10 +45,10 @@ func GetAllLanguages(c *gin.Context) {
 
 }
 func NewGame(c *gin.Context) {
-	gameID, err := service.NewGame()
+	gameID, sessionKey, err := service.NewGame()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create a new game"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"game_id": gameID})
+	c.JSON(http.StatusOK, gin.H{"game_id": gameID, "session_key": sessionKey})
 }

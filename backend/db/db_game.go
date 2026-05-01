@@ -22,10 +22,11 @@ func GetAllLanguages() ([]models.Language, error) {
 	return languages, nil
 }
 
-func GetLanguageIDByGameID(gameID int) (int, error) {
+func GetLanguageIDByGameID(gameID int) (int, string, error) {
 	var languageID int
-	err := DB.QueryRow("SELECT language_id FROM games WHERE id = $1", gameID).Scan(&languageID)
-	return languageID, err
+	var sessionKey string
+	err := DB.QueryRow("SELECT language_id, session_key FROM games WHERE id = $1", gameID).Scan(&languageID, &sessionKey)
+	return languageID, sessionKey, err
 }
 
 func FinishGame(gameID int) error {
@@ -33,13 +34,14 @@ func FinishGame(gameID int) error {
 	return err
 }
 
-func NewGame() (int, error) {
+func NewGame() (int, string, error) {
 	var gameID int
-	err := DB.QueryRow("INSERT INTO games (language_id) SELECT id FROM languages ORDER BY RANDOM() LIMIT 1 RETURNING id;").Scan(&gameID)
+	var sessionKey string
+	err := DB.QueryRow("INSERT INTO games (language_id, session_key) SELECT id, md5(random()::text) FROM languages ORDER BY RANDOM() LIMIT 1 RETURNING id, session_key;").Scan(&gameID, &sessionKey)
 	if err != nil {
-		return -1, err
+		return -1, "", err
 	}
-	return gameID, nil
+	return gameID, sessionKey, nil
 }
 
 func GetLanguageByName(languageName string) (models.Language, error) {
@@ -78,10 +80,11 @@ func GetLanguageByID(id int) (models.Language, error) {
 	return language, err
 }
 
-func GetLanguageByGameID(gameID int) (models.Language, error) {
-	languageID, err := GetLanguageIDByGameID(gameID)
+func GetLanguageByGameID(gameID int) (string, models.Language, error) {
+	languageID, sessionKey, err := GetLanguageIDByGameID(gameID)
 	if err != nil {
-		return models.Language{}, err
+		return "", models.Language{}, err
 	}
-	return GetLanguageByID(languageID)
+	lang, err := GetLanguageByID(languageID)
+	return sessionKey, lang, err
 }

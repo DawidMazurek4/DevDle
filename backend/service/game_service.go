@@ -1,28 +1,33 @@
 package service
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/DawidMazurek4/DevDle/db"
 	"github.com/DawidMazurek4/DevDle/models"
 )
 
-func NewGame() (int, error) {
+func NewGame() (int, string, error) {
 	return db.NewGame()
 }
 func GetAllLanguages() ([]models.Language, error) {
 	return db.GetAllLanguages()
 }
-func CompareLanguage(languageName string, gameID int) (models.Language, models.LanguageResult, error) {
+func CompareLanguage(languageName string, gameID int, sessionKey string) (models.Language, models.LanguageResult, error) {
 
 	userLanguage, err := db.GetLanguageByName(languageName)
 	if err != nil {
 		return models.Language{}, models.LanguageResult{}, err
 	}
 
-	correctLanguage, err := db.GetLanguageByGameID(gameID)
+	correct_sessionKey, correctLanguage, err := db.GetLanguageByGameID(gameID)
 	if err != nil {
 		return models.Language{}, models.LanguageResult{}, err
+	}
+
+	if sessionKey != correct_sessionKey {
+		return models.Language{}, models.LanguageResult{}, fmt.Errorf("invalid session key")
 	}
 
 	result := models.LanguageResult{}

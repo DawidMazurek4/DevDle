@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS languages (
 );
 CREATE TABLE IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
+    session_key VARCHAR(255) NOT NULL,
     language_id INT NOT NULL,
     is_finished BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW()
