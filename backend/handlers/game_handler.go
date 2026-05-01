@@ -18,6 +18,10 @@ func CompareLanguage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
+	if body.Language == "" || body.GameID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload empty fields"})
+		return
+	}
 
 	user, gameResult, err := service.CompareLanguage(body.Language, body.GameID)
 	if err != nil {
