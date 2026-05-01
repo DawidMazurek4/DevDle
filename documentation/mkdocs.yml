@@ -1,0 +1,5 @@
+site_name: DevDle Documentation
+nav:
+  - Home: index.md
+  - Backend: backend.md
+theme: readthedocs
