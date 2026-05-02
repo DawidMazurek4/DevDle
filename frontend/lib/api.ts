@@ -1,6 +1,5 @@
 export const dbUrl = process.env.BACKEND_URL;
-export var gameid: number = 0;
-export var sessionKey: string = "";
+
 export async function getLanguages(){
     var all_languages: string[] = []
     const res = await fetch(`${dbUrl}/languages`);
@@ -14,11 +13,10 @@ export async function newGame(){
     const res = await fetch(`${dbUrl}/game`);
     const data = await res.json();
     data.game_id = parseInt(data.game_id);
-    gameid = data.game_id;
-    sessionKey = data.session_key;
+    return [data.game_id, data.session_key];
 }
 
-export async function guessLanguage(languageName: string){
+export async function guessLanguage(languageName: string, gameid: number, sessionKey: string){
     if (gameid === 0 || sessionKey === "") {
         throw new Error("Game not initialized. Please start a new game first.");
     }
