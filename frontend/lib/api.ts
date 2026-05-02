@@ -1,7 +1,6 @@
 import { get } from "http";
 
-// export const dbUrl = process.env.BACKEND_URL;
-export const dbUrl = "http://localhost:8080";
+export const dbUrl = process.env.BACKEND_URL;
 
 export async function getLanguages(){
     var all_languages: string[] = []
@@ -11,4 +10,3 @@ export async function getLanguages(){
     console.log(all_languages);
     return all_languages;
 }
-getLanguages();
