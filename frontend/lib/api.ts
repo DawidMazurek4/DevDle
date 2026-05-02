@@ -1,12 +1,14 @@
-export const dbUrl = process.env.BACKEND_URL;
+import { get } from "http";
 
-export function getLanguages(){
+// export const dbUrl = process.env.BACKEND_URL;
+export const dbUrl = "http://localhost:8080";
+
+export async function getLanguages(){
     var all_languages: string[] = []
-    fetch(`${dbUrl}/languages`).then(res => res.json()).then(data => {
-        console.log(data);
-        all_languages = data;
-    }).catch(err => {
-        console.error(err);
-    });
+    const res = await fetch(`${dbUrl}/languages`);
+    const data = await res.json();
+    all_languages = data;
+    console.log(all_languages);
     return all_languages;
 }
+getLanguages();

@@ -11,7 +11,7 @@ import (
 func NewGame() (int, string, error) {
 	return db.NewGame()
 }
-func GetAllLanguages() ([]models.Language, error) {
+func GetAllLanguages() ([]string, error) {
 	return db.GetAllLanguages()
 }
 func CompareLanguage(languageName string, gameID int, sessionKey string) (models.Language, models.LanguageResult, error) {

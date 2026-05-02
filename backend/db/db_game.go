@@ -4,17 +4,17 @@ import (
 	"github.com/DawidMazurek4/DevDle/models"
 )
 
-func GetAllLanguages() ([]models.Language, error) {
+func GetAllLanguages() ([]string, error) {
 	rows, err := DB.Query("SELECT name FROM languages")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var languages []models.Language
+	var languages []string
 	for rows.Next() {
-		var language models.Language
-		if err := rows.Scan(&language.Name); err != nil {
+		var language string
+		if err := rows.Scan(&language); err != nil {
 			return nil, err
 		}
 		languages = append(languages, language)
