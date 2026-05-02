@@ -1,7 +1,4 @@
-import { get } from "http";
-
-// export const dbUrl = process.env.BACKEND_URL;
-export const dbUrl = "http://localhost:8080";
+export const dbUrl = process.env.BACKEND_URL;
 export var gameid: number = 0;
 export var sessionKey: string = "";
 export async function getLanguages(){
@@ -19,9 +16,24 @@ export async function newGame(){
     data.game_id = parseInt(data.game_id);
     gameid = data.game_id;
     sessionKey = data.session_key;
+}
+
+export async function guessLanguage(languageName: string){
+    if (gameid === 0 || sessionKey === "") {
+        throw new Error("Game not initialized. Please start a new game first.");
+    }
+    const res = await fetch(`${dbUrl}/guess`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            language: languageName,
+            game_id: gameid,
+            session_key: sessionKey
+        })
+    });
+    const data = await res.json();
     return data;
 }
 
-newGame().then(() => {
-    console.log(`Game ID: ${gameid}, Session Key: ${sessionKey}`);
-});
