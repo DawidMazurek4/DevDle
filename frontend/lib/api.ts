@@ -1,4 +1,4 @@
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "") ?? "";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, options);
