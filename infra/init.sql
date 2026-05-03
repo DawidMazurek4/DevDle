@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS languages (
     language_level VARCHAR(50)
 );
 CREATE TABLE IF NOT EXISTS games (
-    id SERIAL PRIMARY KEY,
+    id INT PRIMARY KEY,
     session_key VARCHAR(255) NOT NULL,
     language_id INT NOT NULL,
     is_finished BOOLEAN DEFAULT FALSE,

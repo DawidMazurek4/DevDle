@@ -1,65 +1,260 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from "react";
+import { getLanguages, guessLanguage, newGame } from "../lib/api";
+import "./main_style.css";
+
+type GuessResult = {
+  language: {
+    id: number;
+    name: string;
+    year: number;
+    typing: string;
+    paradigm: string;
+    mainUsage: string;
+    executionType: string;
+    languageLevel: string;
+  };
+  result: {
+    year: number;
+    typing: number;
+    paradigm: number;
+    mainUsage: number;
+    executionType: number;
+    languageLevel: number;
+  };
+};
 
 export default function Home() {
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+  const [gameId, setGameId] = useState<number>(0);
+  const [sessionKey, setSessionKey] = useState<string>("");
+  const [guessHistory, setGuessHistory] = useState<GuessResult[]>([]);
+  const [message, setMessage] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [won, setWon] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    getLanguages()
+      .then((data) => {
+        setLanguages(data);
+        setSelectedLanguage(data[0] ?? "");
+      })
+      .catch((err) => {
+        setError(`Failed to load languages: ${err.message}`);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const gameStarted = gameId !== 0 && sessionKey !== "";
+
+  const handleNewGame = async () => {
+    setError("");
+    setMessage("");
+    setGuessHistory([]);
+    setWon(false);
+    setIsLoading(true);
+
+    try {
+      const [newGameId, newSessionKey] = await newGame();
+      setGameId(newGameId);
+      setSessionKey(newSessionKey);
+      setMessage("New game started. Guess the language.");
+    } catch (err: any) {
+      setError(err.message ?? "Failed to start game.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGuess = async () => {
+    if (!selectedLanguage) {
+      setError("Select a language.");
+      return;
+    }
+    if (!gameStarted) {
+      setError("Start a new game first.");
+      return;
+    }
+    if (won) {
+      setError("Game already won. Start a new game.");
+      return;
+    }
+
+    setError("");
+    setMessage("");
+    setIsLoading(true);
+
+    try {
+      const result = await guessLanguage(selectedLanguage, gameId, sessionKey);
+      const resultData = result as GuessResult;
+      setGuessHistory((prev) => [resultData, ...prev]); 
+
+      const isWin = Object.values(resultData.result).every((value) => value === 1);
+      if (isWin) {
+        setWon(true);
+        setMessage(`You guessed correctly: ${resultData.language.name}!`);
+      } else {
+        setMessage("Guess submitted.");
+      }
+    } catch (err: any) {
+      setError(err.message ?? "Error occurred during guess.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="devdle-container">
+
+      <header className="devdle-header">
+        <h1 className="devdle-title">DevDle</h1>
+        <p className="devdle-subtitle">Guess the programming language based on hints</p>
+      </header>
+
+      <div className="game-layout">
+
+        <div className="control-panel">
+          <div className="game-status">
+            <p className={`status-indicator ${gameStarted ? 'status-active' : 'status-inactive'}`}>
+              {gameStarted ? `Game #${gameId || ""}` : "Start a new game"}
+            </p>
+          </div>
+
+          {gameStarted && (
+            <>
+            </>
+          )}
+
+          <button
+            className="action-button"
+            onClick={handleNewGame}
+            disabled={isLoading}
+            style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            New Game
+          </button>
+
+
+          {error && (
+            <div className="message message-error">
+              {error}
+            </div>
+          )}
+          {message && (
+            <div className={`message ${won ? 'message-success' : 'message-info'}`}>
+              {message}
+            </div>
+          )}
         </div>
-      </main>
+
+
+        <div className="control-panel shooting-panel">
+          {gameStarted ? (
+            <>
+              <div className="language-selector">
+                <label className="selector-label" htmlFor="language-select">
+                  Select Language
+                </label>
+                <select
+                  id="language-select"
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="language-select"
+                >
+                  {languages.map((lang) => (
+                    <option key={lang} value={lang}>
+                      {lang}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={handleGuess}
+                disabled={isLoading || won}
+                className="action-button"
+              >
+                {isLoading ? "Submitting..." : "Submit Guess"}
+              </button>
+            </>
+          ) : (
+            <div className="empty-state">
+              <p>Start a new game to begin guessing</p>
+            </div>
+          )}
+        </div>
+
+        <div className="results-panel">
+          <h2 className="results-title">Your Guesses</h2>
+
+          {guessHistory.length > 0 ? (
+            <div className="guess-history">
+              {guessHistory.map((guess, idx) => (
+                <GuessCard key={idx} guess={guess} attemptNumber={guessHistory.length - idx} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <p>
+                {gameStarted
+                  ? "Submit your first guess to see hints"
+                  : "Start a new game to begin"}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuessCard({ guess, attemptNumber }: { guess: GuessResult; attemptNumber: number }) {
+  const { language, result } = guess;
+
+  return (
+    <div className="guess-card">
+      <div className="guess-header">
+        <h3 className="guess-title">Attempt #{attemptNumber}: {language.name}</h3>
+      </div>
+
+      <div className="attributes-grid">
+        <AttributeBox label="Year" value={result.year} isYear={true} languageValue={language.year} />
+        <AttributeBox label="Typing" value={result.typing} isYear={false} languageValue={language.typing} />
+        <AttributeBox label="Paradigm" value={result.paradigm} isYear={false} languageValue={language.paradigm} />
+        <AttributeBox label="Usage" value={result.mainUsage} isYear={false} languageValue={language.mainUsage} />
+        <AttributeBox label="Execution" value={result.executionType} isYear={false} languageValue={language.executionType} />
+        <AttributeBox label="Level" value={result.languageLevel} isYear={false} languageValue={language.languageLevel} />
+      </div>
+    </div>
+  );
+}
+
+function AttributeBox({ label, value, isYear, languageValue }: { label: string; value: number; isYear: boolean; languageValue: string | number }) {
+  let className = "attribute-box incorrect";
+
+  if (value === 1) {
+    className = "attribute-box correct";
+  } else if (isYear) {
+    if (value === -1) {
+      className = "attribute-box year-low";
+    } else if (value === 0) {
+      className = "attribute-box year-high";
+    }
+  }
+
+  return (
+    <div className={className}>
+      <p className="attribute-label">{label}</p>
+      <p className="attribute-value">{languageValue}</p>
+      {isYear && value !== 1 && (
+        <p className="attribute-hint">
+          {value === -1 ? "Too low" : "Too high"}
+        </p>
+      )}
     </div>
   );
 }
