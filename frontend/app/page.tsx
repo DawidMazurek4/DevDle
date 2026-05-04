@@ -116,7 +116,7 @@ export default function Home() {
 
     const header = `I found the language in #DevDle in ${guessHistory.length} guesses\n${window.location.href}\n`;
 
-    const grid = [...guessHistory].reverse().slice(0, 5).map(guess => {
+    const grid = [...guessHistory].slice(0, 5).map(guess => {
       const r = guess.result;
       const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬆️' : '⬇️');
       
