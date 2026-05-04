@@ -68,6 +68,11 @@ Compare a user's guess against the secret language of a specific game.
       }
     }
     ```
+*   **Special fields:**
+    *   `year`: -1 when year is too low, 0 when year is too big and 1 when it is equal
+    *   `paradigm`: 0 when wrong 1 when correct 2 when partly correct
+    *   `mainUsage`: 0 when wrong 1 when correct 2 when partly correct
+
 *   **Error Responses:**
     *   `400 Bad Request`: Missing fields or invalid JSON.
     *   `500 Internal Server Error`: Database or comparison logic failure.

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/DawidMazurek4/DevDle/models"
 	"github.com/DawidMazurek4/DevDle/service"
@@ -23,6 +24,7 @@ func CompareLanguage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload empty fields"})
 		return
 	}
+	body.Language = strings.ToLower(body.Language)
 
 	user, gameResult, err := service.CompareLanguage(body.Language, body.GameID, body.SessionKey)
 	if err != nil {
