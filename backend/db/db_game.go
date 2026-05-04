@@ -1,6 +1,10 @@
 package db
 
 import (
+	"fmt"
+	"math/rand"
+	"time"
+
 	"github.com/DawidMazurek4/DevDle/models"
 )
 
@@ -35,13 +39,36 @@ func FinishGame(gameID int) error {
 }
 
 func NewGame() (int, string, error) {
+	// Generate random game ID between 100000 and 999999, ensure uniqueness
+	rand.Seed(time.Now().UnixNano())
+
 	var gameID int
 	var sessionKey string
-	err := DB.QueryRow("INSERT INTO games (language_id, session_key) SELECT id, md5(random()::text) FROM languages ORDER BY RANDOM() LIMIT 1 RETURNING id, session_key;").Scan(&gameID, &sessionKey)
-	if err != nil {
-		return -1, "", err
+	var err error
+
+	// Try up to 10 times to find a unique ID
+	for attempts := 0; attempts < 10; attempts++ {
+		gameID = rand.Intn(900000) + 100000
+
+		// Check if ID already exists
+		var exists bool
+		checkErr := DB.QueryRow("SELECT EXISTS(SELECT 1 FROM games WHERE id = $1)", gameID).Scan(&exists)
+		if checkErr != nil {
+			return -1, "", checkErr
+		}
+
+		if !exists {
+			// ID is free, try to insert
+			err = DB.QueryRow("INSERT INTO games (id, language_id, session_key) SELECT $1, id, md5(random()::text) FROM languages ORDER BY RANDOM() LIMIT 1 RETURNING session_key;", gameID).Scan(&sessionKey)
+			if err == nil {
+				// Success!
+				return gameID, sessionKey, nil
+			}
+			// If insert failed for other reasons, continue trying
+		}
 	}
-	return gameID, sessionKey, nil
+
+	return -1, "", fmt.Errorf("failed to generate unique game ID after 10 attempts")
 }
 
 func GetLanguageByName(languageName string) (models.Language, error) {

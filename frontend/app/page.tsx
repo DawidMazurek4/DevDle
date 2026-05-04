@@ -91,7 +91,7 @@ export default function Home() {
     try {
       const result = await guessLanguage(selectedLanguage, gameId, sessionKey);
       const resultData = result as GuessResult;
-      setGuessHistory((prev) => [resultData, ...prev]); 
+      setGuessHistory((prev) => [resultData, ...prev]);
 
       const isWin = Object.values(resultData.result).every((value) => value === 1);
       if (isWin) {
@@ -107,27 +107,59 @@ export default function Home() {
     }
   };
 
+  const handleShare = async () => {
+    const emojiMapStandard = (val: number) => {
+      if (val === 1) return '🟩';
+      if (val === 2) return '🟧';
+      return '🟥';
+    };
+
+    const header = `I found the language in #DevDle in ${guessHistory.length} guesses\n`;
+
+    const grid = [...guessHistory].reverse().slice(0, 5).map(guess => {
+      const r = guess.result;
+      const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬆️' : '⬇️');
+      
+      return [
+        yearEmoji,
+        emojiMapStandard(r.typing),
+        emojiMapStandard(r.paradigm),
+        emojiMapStandard(r.mainUsage),
+        emojiMapStandard(r.executionType),
+        emojiMapStandard(r.languageLevel)
+      ].join('');
+    }).join('\n');
+
+    const extra = guessHistory.length > 5 ? `\n➕${guessHistory.length - 5} more` : '';
+    const fullText = `${header}${grid}${extra}`;
+
+    try {
+      // Wymuszamy kopiowanie do schowka zamiast navigator.share
+      await navigator.clipboard.writeText(fullText);
+      alert('Result copied to clipboard! 📋');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      // Fallback tylko gdyby schowek padł
+      if (navigator.share) {
+        await navigator.share({ text: fullText });
+      }
+    }
+  };
+
   return (
     <div className="devdle-container">
-
       <header className="devdle-header">
         <h1 className="devdle-title">DevDle</h1>
         <p className="devdle-subtitle">Guess the programming language based on hints</p>
       </header>
 
       <div className="game-layout">
-
         <div className="control-panel">
           <div className="game-status">
             <p className={`status-indicator ${gameStarted ? 'status-active' : 'status-inactive'}`}>
               {gameStarted ? `Game #${gameId || ""}` : "Start a new game"}
             </p>
           </div>
-
-          {gameStarted && (
-            <>
-            </>
-          )}
 
           <button
             className="action-button"
@@ -138,19 +170,33 @@ export default function Home() {
             New Game
           </button>
 
-
-          {error && (
-            <div className="message message-error">
-              {error}
-            </div>
-          )}
-          {message && (
-            <div className={`message ${won ? 'message-success' : 'message-info'}`}>
-              {message}
-            </div>
-          )}
+          <div className="message-area">
+            {error && (
+              <div className="message message-error">
+                {error}
+              </div>
+            )}
+            {message && (
+              <div className={`message ${won ? 'message-success' : 'message-info'}`}>
+                {message}
+              </div>
+            )}
+            {won && (
+              <button
+                className="action-button share-button"
+                onClick={handleShare}
+                style={{ 
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  marginTop: '15px',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 15px rgba(37, 99, 235, 0.4)'
+                }}
+              >
+                Copy Results 📋
+              </button>
+            )}
+          </div>
         </div>
-
 
         <div className="control-panel shooting-panel">
           {gameStarted ? (
