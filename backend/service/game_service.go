@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/DawidMazurek4/DevDle/db"
 	"github.com/DawidMazurek4/DevDle/models"
@@ -30,10 +30,13 @@ func CompareLanguage(languageName string, gameID int, sessionKey string) (models
 		return models.Language{}, models.LanguageResult{}, fmt.Errorf("invalid session key")
 	}
 
+	user_main_usage_list := strings.Split(userLanguage.MainUsage, "/")
+	correct_main_usage_list := strings.Split(correctLanguage.MainUsage, "/")
+
+	user_paradigm_list := strings.Split(userLanguage.Paradigm, "/")
+	correct_paradigm_list := strings.Split(correctLanguage.Paradigm, "/")
 	result := models.LanguageResult{}
 
-	// win condition
-	log.Printf("Comparing user language ID: %d with correct language ID: %d", userLanguage.Id, correctLanguage.Id)
 	if userLanguage.Id == correctLanguage.Id {
 		_ = db.FinishGame(gameID)
 
@@ -66,11 +69,18 @@ func CompareLanguage(languageName string, gameID int, sessionKey string) (models
 	}
 
 	// paradigm
-	log.Printf("User language paradigm: %s, Correct language paradigm: %s", userLanguage.Paradigm, correctLanguage.Paradigm)
 	if userLanguage.Paradigm == correctLanguage.Paradigm {
 		result.Paradigm = 1
 	} else {
 		result.Paradigm = 0
+		for _, paradigm := range user_paradigm_list {
+			for _, correct_paradigm := range correct_paradigm_list {
+				if paradigm == correct_paradigm {
+					result.Paradigm = 2
+					break
+				}
+			}
+		}
 	}
 
 	// main usage
@@ -78,6 +88,14 @@ func CompareLanguage(languageName string, gameID int, sessionKey string) (models
 		result.MainUsage = 1
 	} else {
 		result.MainUsage = 0
+		for _, usage := range user_main_usage_list {
+			for _, correct_usage := range correct_main_usage_list {
+				if usage == correct_usage {
+					result.MainUsage = 2
+					break
+				}
+			}
+		}
 	}
 
 	// execution type
