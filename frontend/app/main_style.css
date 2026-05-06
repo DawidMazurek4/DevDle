@@ -1,5 +1,3 @@
-
-
 :root {
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
@@ -308,12 +306,21 @@ body {
   text-align: center;
   border: 1px solid;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .attribute-box.correct {
   background: var(--success-bg);
   border-color: var(--success-border);
   color: var(--success-text);
+}
+
+/* DODANA KLASA DLA ŻÓŁTEGO KOLORU */
+.attribute-box.partial {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
 }
 
 .attribute-box.incorrect {

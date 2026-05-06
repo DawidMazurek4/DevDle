@@ -41,7 +41,9 @@ export default function Home() {
     getLanguages()
       .then((data) => {
         setLanguages(data);
-        setSelectedLanguage(data[0] ?? "");
+        if (data && data.length > 0) {
+          setSelectedLanguage(data[0]);
+        }
       })
       .catch((err) => {
         setError(`Failed to load languages: ${err.message}`);
@@ -110,7 +112,7 @@ export default function Home() {
   const handleShare = async () => {
     const emojiMapStandard = (val: number) => {
       if (val === 1) return '🟩';
-      if (val === 2) return '🟧';
+      if (val === 2) return '🟨';
       return '🟥';
     };
 
@@ -118,7 +120,7 @@ export default function Home() {
 
     const grid = [...guessHistory].reverse().slice(0, 5).map(guess => {
       const r = guess.result;
-      const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬆️' : '⬇️');
+      const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬇️' : '⬆️');
       
       return [
         yearEmoji,
@@ -134,12 +136,10 @@ export default function Home() {
     const fullText = `${header}${grid}${extra}`;
 
     try {
-      // Wymuszamy kopiowanie do schowka zamiast navigator.share
       await navigator.clipboard.writeText(fullText);
       alert('Result copied to clipboard! 📋');
     } catch (err) {
       console.error('Failed to copy: ', err);
-      // Fallback tylko gdyby schowek padł
       if (navigator.share) {
         await navigator.share({ text: fullText });
       }
@@ -268,39 +268,33 @@ function GuessCard({ guess, attemptNumber }: { guess: GuessResult; attemptNumber
       </div>
 
       <div className="attributes-grid">
-        <AttributeBox label="Year" value={result.year} isYear={true} languageValue={language.year} />
-        <AttributeBox label="Typing" value={result.typing} isYear={false} languageValue={language.typing} />
-        <AttributeBox label="Paradigm" value={result.paradigm} isYear={false} languageValue={language.paradigm} />
-        <AttributeBox label="Usage" value={result.mainUsage} isYear={false} languageValue={language.mainUsage} />
-        <AttributeBox label="Execution" value={result.executionType} isYear={false} languageValue={language.executionType} />
-        <AttributeBox label="Level" value={result.languageLevel} isYear={false} languageValue={language.languageLevel} />
+        <AttributeBox label="Year" value={result.year} displayValue={language.year} isYear={true} />
+        <AttributeBox label="Typing" value={result.typing} displayValue={language.typing} />
+        <AttributeBox label="Paradigm" value={result.paradigm} displayValue={language.paradigm} />
+        <AttributeBox label="Usage" value={result.mainUsage} displayValue={language.mainUsage} />
+        <AttributeBox label="Execution" value={result.executionType} displayValue={language.executionType} />
+        <AttributeBox label="Level" value={result.languageLevel} displayValue={language.languageLevel} />
       </div>
     </div>
   );
 }
 
-function AttributeBox({ label, value, isYear, languageValue }: { label: string; value: number; isYear: boolean; languageValue: string | number }) {
-  let className = "attribute-box incorrect";
-
-  if (value === 1) {
-    className = "attribute-box correct";
-  } else if (isYear) {
-    if (value === -1) {
-      className = "attribute-box year-low";
-    } else if (value === 0) {
-      className = "attribute-box year-high";
-    }
-  }
+function AttributeBox({ label, value, displayValue, isYear = false }: { label: string; value: number; displayValue: string | number; isYear?: boolean }) {
+  const getStatusClass = () => {
+    if (value === 1) return "correct";
+    if (value === 2) return "partial"; 
+    if (isYear && (value === -1 || value === -2)) return "partial"; 
+    return "incorrect";
+  };
 
   return (
-    <div className={className}>
-      <p className="attribute-label">{label}</p>
-      <p className="attribute-value">{languageValue}</p>
-      {isYear && value !== 1 && (
-        <p className="attribute-hint">
-          {value === -1 ? "Too low" : "Too high"}
-        </p>
-      )}
+    <div className={`attribute-box ${getStatusClass()}`}>
+      <span className="attribute-label">{label}</span>
+      <span className="attribute-value">
+        {displayValue}
+        {isYear && value === -1 && " ↓"}
+        {isYear && value === -2 && " ↑"}
+      </span>
     </div>
   );
 }
