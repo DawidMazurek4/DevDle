@@ -299,8 +299,8 @@ function AttributeBox({ label, value, displayValue, isYear = false }: {
       <span className="attribute-label">{label}</span>
       <span className="attribute-value">
         {displayValue}
-        {isYear && value === -1 && " ↓"}
-        {isYear && value === -2 && " ↑"}
+        {isYear && value === -1 && "↑"}
+        {isYear && value === -2 && "↓"}
       </span>
     </div>
   );
