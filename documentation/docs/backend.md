@@ -82,3 +82,52 @@ Compare a user's guess against the secret language of a specific game.
 ## Technical Details
 *   **CORS:** Enabled for the frontend URL defined in environment variables.
 *   **Methods Allowed:** `GET`, `POST`.
+
+## Backend Flow
+
+This section describes how the backend application initializes and how requests are processed throughout the system.
+
+### 1. Application Startup
+
+The application starts in `main.go`. During initialization:
+
+* A database connection is established
+* Application dependencies are initialized
+* The HTTP router is configured and started
+
+### 2. HTTP Layer
+
+The `router.go` module is responsible for:
+
+* Defining HTTP routes
+* Listening for incoming requests
+* Routing requests to the appropriate handlers
+
+### 3. Request Handling
+
+Handlers (e.g. `game_handler.go`) are responsible for:
+
+* Validating incoming requests
+* Parsing request data
+* Delegating execution to the service layer
+* Returning JSON responses
+
+### 4. Service Layer
+
+The `game_service.go` module contains the core business logic:
+
+* Implements game rules and logic
+* Coordinates application behavior
+* Acts as an intermediary between handlers and the data layer
+
+### 5. Data Access Layer
+
+The `db_game.go` module handles:
+
+* Executing database queries
+* Persisting and retrieving data
+* Mapping database results to application models
+
+### Summary Flow
+
+`main.go` → `router.go` → `game_handler.go` → `game_service.go` → `db_game.go` → database
