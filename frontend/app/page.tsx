@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { getLanguages, guessLanguage, newGame } from "../lib/api";
 import "./main_style.css";
 
+// --- Types ---
+
 type GuessResult = {
   language: {
     id: number;
@@ -25,6 +27,8 @@ type GuessResult = {
   };
 };
 
+// --- Main Component ---
+
 export default function Home() {
   const [languages, setLanguages] = useState<string[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
@@ -36,14 +40,15 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [won, setWon] = useState<boolean>(false);
 
+  const gameStarted = gameId !== 0 && sessionKey !== "";
+
+  // Initial load
   useEffect(() => {
     setIsLoading(true);
     getLanguages()
       .then((data) => {
         setLanguages(data);
-        if (data && data.length > 0) {
-          setSelectedLanguage(data[0]);
-        }
+        setSelectedLanguage(data[0] ?? "");
       })
       .catch((err) => {
         setError(`Failed to load languages: ${err.message}`);
@@ -51,7 +56,7 @@ export default function Home() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const gameStarted = gameId !== 0 && sessionKey !== "";
+  // --- Handlers ---
 
   const handleNewGame = async () => {
     setError("");
@@ -59,7 +64,6 @@ export default function Home() {
     setGuessHistory([]);
     setWon(false);
     setIsLoading(true);
-
     try {
       const [newGameId, newSessionKey] = await newGame();
       setGameId(newGameId);
@@ -116,21 +120,23 @@ export default function Home() {
       return '🟥';
     };
 
-    const header = `I found the language in #DevDle in ${guessHistory.length} guesses\n${window.location.href}\n`;
-
-    const grid = [...guessHistory].slice(0, 5).map(guess => {
-      const r = guess.result;
-      const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬇️' : '⬆️');
-      
-      return [
-        yearEmoji,
-        emojiMapStandard(r.typing),
-        emojiMapStandard(r.paradigm),
-        emojiMapStandard(r.mainUsage),
-        emojiMapStandard(r.executionType),
-        emojiMapStandard(r.languageLevel)
-      ].join('');
-    }).join('\n');
+    const header = `I found the language in #DevDle in ${guessHistory.length} guesses\n`;
+    
+    const grid = [...guessHistory]
+      .reverse()
+      .slice(0, 5)
+      .map(guess => {
+        const r = guess.result;
+        const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬇️' : '⬆️');
+        return [
+          yearEmoji,
+          emojiMapStandard(r.typing),
+          emojiMapStandard(r.paradigm),
+          emojiMapStandard(r.mainUsage),
+          emojiMapStandard(r.executionType),
+          emojiMapStandard(r.languageLevel)
+        ].join('');
+      }).join('\n');
 
     const extra = guessHistory.length > 5 ? `\n➕${guessHistory.length - 5} more` : '';
     const fullText = `${header}${grid}${extra}`;
@@ -145,6 +151,8 @@ export default function Home() {
       }
     }
   };
+
+  // --- Render ---
 
   return (
     <div className="devdle-container">
@@ -161,9 +169,9 @@ export default function Home() {
             </p>
           </div>
 
-          <button
-            className="action-button"
-            onClick={handleNewGame}
+          <button 
+            className="action-button" 
+            onClick={handleNewGame} 
             disabled={isLoading}
             style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
           >
@@ -171,19 +179,15 @@ export default function Home() {
           </button>
 
           <div className="message-area">
-            {error && (
-              <div className="message message-error">
-                {error}
-              </div>
-            )}
+            {error && <div className="message message-error">{error}</div>}
             {message && (
               <div className={`message ${won ? 'message-success' : 'message-info'}`}>
                 {message}
               </div>
             )}
             {won && (
-              <button
-                className="action-button share-button"
+              <button 
+                className="action-button share-button" 
                 onClick={handleShare}
                 style={{ 
                   background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
@@ -205,23 +209,20 @@ export default function Home() {
                 <label className="selector-label" htmlFor="language-select">
                   Select Language
                 </label>
-                <select
-                  id="language-select"
-                  value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                <select 
+                  id="language-select" 
+                  value={selectedLanguage} 
+                  onChange={(e) => setSelectedLanguage(e.target.value)} 
                   className="language-select"
                 >
                   {languages.map((lang) => (
-                    <option key={lang} value={lang}>
-                      {lang}
-                    </option>
+                    <option key={lang} value={lang}>{lang}</option>
                   ))}
                 </select>
               </div>
-
-              <button
-                onClick={handleGuess}
-                disabled={isLoading || won}
+              <button 
+                onClick={handleGuess} 
+                disabled={isLoading || won} 
                 className="action-button"
               >
                 {isLoading ? "Submitting..." : "Submit Guess"}
@@ -236,19 +237,20 @@ export default function Home() {
 
         <div className="results-panel">
           <h2 className="results-title">Your Guesses</h2>
-
           {guessHistory.length > 0 ? (
             <div className="guess-history">
               {guessHistory.map((guess, idx) => (
-                <GuessCard key={idx} guess={guess} attemptNumber={guessHistory.length - idx} />
+                <GuessCard 
+                  key={idx} 
+                  guess={guess} 
+                  attemptNumber={guessHistory.length - idx} 
+                />
               ))}
             </div>
           ) : (
             <div className="empty-state">
               <p>
-                {gameStarted
-                  ? "Submit your first guess to see hints"
-                  : "Start a new game to begin"}
+                {gameStarted ? "Submit your first guess to see hints" : "Start a new game to begin"}
               </p>
             </div>
           )}
@@ -258,15 +260,15 @@ export default function Home() {
   );
 }
 
+// --- Helper Components ---
+
 function GuessCard({ guess, attemptNumber }: { guess: GuessResult; attemptNumber: number }) {
   const { language, result } = guess;
-
   return (
     <div className="guess-card">
       <div className="guess-header">
         <h3 className="guess-title">Attempt #{attemptNumber}: {language.name}</h3>
       </div>
-
       <div className="attributes-grid">
         <AttributeBox label="Year" value={result.year} displayValue={language.year} isYear={true} />
         <AttributeBox label="Typing" value={result.typing} displayValue={language.typing} />
@@ -279,11 +281,16 @@ function GuessCard({ guess, attemptNumber }: { guess: GuessResult; attemptNumber
   );
 }
 
-function AttributeBox({ label, value, displayValue, isYear = false }: { label: string; value: number; displayValue: string | number; isYear?: boolean }) {
+function AttributeBox({ label, value, displayValue, isYear = false }: { 
+  label: string; 
+  value: number; 
+  displayValue: string | number; 
+  isYear?: boolean 
+}) {
   const getStatusClass = () => {
     if (value === 1) return "correct";
-    if (value === 2) return "partial"; 
-    if (isYear && (value === -1 || value === -2)) return "partial"; 
+    if (value === 2) return "partial";
+    if (isYear && (value === -1 || value === -2)) return "partial";
     return "incorrect";
   };
 
@@ -298,3 +305,4 @@ function AttributeBox({ label, value, displayValue, isYear = false }: { label: s
     </div>
   );
 }
+  
