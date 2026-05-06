@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { getLanguages, guessLanguage, newGame } from "../lib/api";
 import "./main_style.css";
 
+// --- Types ---
+
 type GuessResult = {
   language: {
     id: number;
@@ -25,6 +27,8 @@ type GuessResult = {
   };
 };
 
+// --- Main Component ---
+
 export default function Home() {
   const [languages, setLanguages] = useState<string[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
@@ -36,6 +40,9 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [won, setWon] = useState<boolean>(false);
 
+  const gameStarted = gameId !== 0 && sessionKey !== "";
+
+  // Initial load
   useEffect(() => {
     setIsLoading(true);
     getLanguages()
@@ -49,7 +56,7 @@ export default function Home() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const gameStarted = gameId !== 0 && sessionKey !== "";
+  // --- Handlers ---
 
   const handleNewGame = async () => {
     setError("");
@@ -57,7 +64,6 @@ export default function Home() {
     setGuessHistory([]);
     setWon(false);
     setIsLoading(true);
-
     try {
       const [newGameId, newSessionKey] = await newGame();
       setGameId(newGameId);
@@ -110,41 +116,43 @@ export default function Home() {
   const handleShare = async () => {
     const emojiMapStandard = (val: number) => {
       if (val === 1) return '🟩';
-      if (val === 2) return '🟧';
+      if (val === 2) return '🟨';
       return '🟥';
     };
 
     const header = `I found the language in #DevDle in ${guessHistory.length} guesses\n`;
-
-    const grid = [...guessHistory].reverse().slice(0, 5).map(guess => {
-      const r = guess.result;
-      const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬆️' : '⬇️');
-      
-      return [
-        yearEmoji,
-        emojiMapStandard(r.typing),
-        emojiMapStandard(r.paradigm),
-        emojiMapStandard(r.mainUsage),
-        emojiMapStandard(r.executionType),
-        emojiMapStandard(r.languageLevel)
-      ].join('');
-    }).join('\n');
+    
+    const grid = [...guessHistory]
+      .reverse()
+      .slice(0, 5)
+      .map(guess => {
+        const r = guess.result;
+        const yearEmoji = r.year === 1 ? '🟩' : (r.year === -1 ? '⬇️' : '⬆️');
+        return [
+          yearEmoji,
+          emojiMapStandard(r.typing),
+          emojiMapStandard(r.paradigm),
+          emojiMapStandard(r.mainUsage),
+          emojiMapStandard(r.executionType),
+          emojiMapStandard(r.languageLevel)
+        ].join('');
+      }).join('\n');
 
     const extra = guessHistory.length > 5 ? `\n➕${guessHistory.length - 5} more` : '';
     const fullText = `${header}${grid}${extra}`;
 
     try {
-      // Wymuszamy kopiowanie do schowka zamiast navigator.share
       await navigator.clipboard.writeText(fullText);
       alert('Result copied to clipboard! 📋');
     } catch (err) {
       console.error('Failed to copy: ', err);
-      // Fallback tylko gdyby schowek padł
       if (navigator.share) {
         await navigator.share({ text: fullText });
       }
     }
   };
+
+  // --- Render ---
 
   return (
     <div className="devdle-container">
@@ -161,9 +169,9 @@ export default function Home() {
             </p>
           </div>
 
-          <button
-            className="action-button"
-            onClick={handleNewGame}
+          <button 
+            className="action-button" 
+            onClick={handleNewGame} 
             disabled={isLoading}
             style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
           >
@@ -171,19 +179,15 @@ export default function Home() {
           </button>
 
           <div className="message-area">
-            {error && (
-              <div className="message message-error">
-                {error}
-              </div>
-            )}
+            {error && <div className="message message-error">{error}</div>}
             {message && (
               <div className={`message ${won ? 'message-success' : 'message-info'}`}>
                 {message}
               </div>
             )}
             {won && (
-              <button
-                className="action-button share-button"
+              <button 
+                className="action-button share-button" 
                 onClick={handleShare}
                 style={{ 
                   background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
@@ -205,23 +209,20 @@ export default function Home() {
                 <label className="selector-label" htmlFor="language-select">
                   Select Language
                 </label>
-                <select
-                  id="language-select"
-                  value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                <select 
+                  id="language-select" 
+                  value={selectedLanguage} 
+                  onChange={(e) => setSelectedLanguage(e.target.value)} 
                   className="language-select"
                 >
                   {languages.map((lang) => (
-                    <option key={lang} value={lang}>
-                      {lang}
-                    </option>
+                    <option key={lang} value={lang}>{lang}</option>
                   ))}
                 </select>
               </div>
-
-              <button
-                onClick={handleGuess}
-                disabled={isLoading || won}
+              <button 
+                onClick={handleGuess} 
+                disabled={isLoading || won} 
                 className="action-button"
               >
                 {isLoading ? "Submitting..." : "Submit Guess"}
@@ -236,19 +237,20 @@ export default function Home() {
 
         <div className="results-panel">
           <h2 className="results-title">Your Guesses</h2>
-
           {guessHistory.length > 0 ? (
             <div className="guess-history">
               {guessHistory.map((guess, idx) => (
-                <GuessCard key={idx} guess={guess} attemptNumber={guessHistory.length - idx} />
+                <GuessCard 
+                  key={idx} 
+                  guess={guess} 
+                  attemptNumber={guessHistory.length - idx} 
+                />
               ))}
             </div>
           ) : (
             <div className="empty-state">
               <p>
-                {gameStarted
-                  ? "Submit your first guess to see hints"
-                  : "Start a new game to begin"}
+                {gameStarted ? "Submit your first guess to see hints" : "Start a new game to begin"}
               </p>
             </div>
           )}
@@ -258,49 +260,49 @@ export default function Home() {
   );
 }
 
+// --- Helper Components ---
+
 function GuessCard({ guess, attemptNumber }: { guess: GuessResult; attemptNumber: number }) {
   const { language, result } = guess;
-
   return (
     <div className="guess-card">
       <div className="guess-header">
         <h3 className="guess-title">Attempt #{attemptNumber}: {language.name}</h3>
       </div>
-
       <div className="attributes-grid">
-        <AttributeBox label="Year" value={result.year} isYear={true} languageValue={language.year} />
-        <AttributeBox label="Typing" value={result.typing} isYear={false} languageValue={language.typing} />
-        <AttributeBox label="Paradigm" value={result.paradigm} isYear={false} languageValue={language.paradigm} />
-        <AttributeBox label="Usage" value={result.mainUsage} isYear={false} languageValue={language.mainUsage} />
-        <AttributeBox label="Execution" value={result.executionType} isYear={false} languageValue={language.executionType} />
-        <AttributeBox label="Level" value={result.languageLevel} isYear={false} languageValue={language.languageLevel} />
+        <AttributeBox label="Year" value={result.year} displayValue={language.year} isYear={true} />
+        <AttributeBox label="Typing" value={result.typing} displayValue={language.typing} />
+        <AttributeBox label="Paradigm" value={result.paradigm} displayValue={language.paradigm} />
+        <AttributeBox label="Usage" value={result.mainUsage} displayValue={language.mainUsage} />
+        <AttributeBox label="Execution" value={result.executionType} displayValue={language.executionType} />
+        <AttributeBox label="Level" value={result.languageLevel} displayValue={language.languageLevel} />
       </div>
     </div>
   );
 }
 
-function AttributeBox({ label, value, isYear, languageValue }: { label: string; value: number; isYear: boolean; languageValue: string | number }) {
-  let className = "attribute-box incorrect";
-
-  if (value === 1) {
-    className = "attribute-box correct";
-  } else if (isYear) {
-    if (value === -1) {
-      className = "attribute-box year-low";
-    } else if (value === 0) {
-      className = "attribute-box year-high";
-    }
-  }
+function AttributeBox({ label, value, displayValue, isYear = false }: { 
+  label: string; 
+  value: number; 
+  displayValue: string | number; 
+  isYear?: boolean 
+}) {
+  const getStatusClass = () => {
+    if (value === 1) return "correct";
+    if (value === 2) return "partial";
+    if (isYear && (value === -1 || value === -2)) return "partial";
+    return "incorrect";
+  };
 
   return (
-    <div className={className}>
-      <p className="attribute-label">{label}</p>
-      <p className="attribute-value">{languageValue}</p>
-      {isYear && value !== 1 && (
-        <p className="attribute-hint">
-          {value === -1 ? "Too low" : "Too high"}
-        </p>
-      )}
+    <div className={`attribute-box ${getStatusClass()}`}>
+      <span className="attribute-label">{label}</span>
+      <span className="attribute-value">
+        {displayValue}
+        {isYear && value === -1 && " ↓"}
+        {isYear && value === -2 && " ↑"}
+      </span>
     </div>
   );
 }
+  
