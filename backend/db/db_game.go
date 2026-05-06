@@ -34,7 +34,7 @@ func GetLanguageIDByGameID(gameID int) (int, string, error) {
 }
 
 func FinishGame(gameID int) error {
-	_, err := DB.Exec("UPDATE games SET finished = true WHERE id = $1", gameID)
+	_, err := DB.Exec("UPDATE games SET is_finished = true WHERE id = $1", gameID)
 	return err
 }
 
